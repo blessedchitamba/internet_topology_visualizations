@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+
+#############################################################################
+## Convenience tool for exploring/testing the aliasq web API.
+##
+#############################################################################
+
+"""Usage:
+  aliasq-api get [options] <RESULT_ID>
+  aliasq-api status [options] <RESULT_ID>
+  aliasq-api list [options]
+  aliasq-api track [options] <ADDR>
+  aliasq-api find [options] <ADDR>
+  aliasq-api group [options] <ADDRS>...
+  aliasq-api dump [options] <DATASET_ID> <SET_ID>
+  aliasq-api (-h | --help)
+  aliasq-api --version
+
+Options:
+  --time DATE   Select single closest dataset to this date.
+  --start DATE  Select datasets with date >= this date.
+  --end DATE    Select datasets with date <= this date.
+  --dataset NAME  Select dataset with the given name or numeric ID.
+  --all         Select all datasets.
+  --out PATH    Path for aliasq results (for 'get').
+  --key STR     aliasq API key.
+  --url URL     aliasq API base URL [default: https://vela.caida.org/aliasq-api].
+  --timeout NUM  HTTP request timeout (secs) [default: 120].
+  --debug       Print additional debugging information.
+  -h --help     Show this screen.
+  --version     Show version.
+
+Specifying <DATE>:
+  Unix timestamp  
+  YYYY-MM-DD             # assumed to be UTC
+  YYYY-MM-DDTHH:MM:SS    # assumed to be UTC (2018-06-01T01:02:03)
+
+Selecting datasets to operate on:
+  * without any selection options: operate on the latest dataset
+  * mutually exclusive: (--time) | (--start --end) | (--dataset) | (--all)
+  * --start without --end means all datasets with dates >= --start
+  * --end without --start means all datasets with dates <= --end
+
+  Special case: The 'dump' command doesn't accept any selection options
+                (the <DATASET_ID> option specifies the dataset to use).
+"""
+
+import os
+import sys
+import time
+import calendar
+
+import requests
+import aliasq_utils
+
+from docopt import docopt
+args = docopt(__doc__, version='0.1')
+
+g_api_key = args["--key"] or os.environ.get("ALIASQ_API_KEY", None)
+if not g_api_key:
+   print("ERROR: missing --key or $ALIASQ_API_KEY", file=sys.stderr)
+   sys.exit(1)   
+
+g_base_url = args["--url"]
+g_debug = args["--debug"]
+g_timeout = aliasq_utils.parse_nonnegative_arg(args["--timeout"])
+
+g_dataset = args["--dataset"]
+g_all = args["--all"]
+g_debug = args["--debug"]
+
+#---------------------------------------------------------------------------
+
+def check_args(main, conflicts):
+   return have(main) and any([have(name) for name in conflicts])
+
+def have(name):
+   return args[name] is not None and args[name] != False
+
+if check_args("dump", ["--time", "--start", "--end", "--dataset", "--all"]):
+   print("ERROR: the 'dump' command doesn't accept any of the options" \
+         " --time/start/end/dataset/all", file=sys.stderr)
+   sys.exit(1)
+
+if check_args("--all", ["--time", "--start", "--end", "--dataset"]):
+   print("ERROR: invalid arguments: can't have both --all and one of" \
+         " --time/start/end/dataset", file=sys.stderr)
+   sys.exit(1)
+
+if check_args("--dataset", ["--time", "--start", "--end"]):
+   print("ERROR: invalid arguments: can't have both --dataset and one of" \
+         " --time/start/end", file=sys.stderr)
+   sys.exit(1)
+
+if check_args("--time", ["--start", "--end"]):
+   print("ERROR: invalid arguments: can't have both --time and one of" \
+         " --start/end", file=sys.stderr)
+   sys.exit(1)
+
+#---------------------------------------------------------------------------
+
+g_start = g_end = None
+
+if have("--time"):
+   g_start = g_end = aliasq_utils.parse_timespec(args, "--time")
+
+if have("--start"):
+   g_start = aliasq_utils.parse_timespec(args, "--start")
+
+if have("--end"):
+   g_end = aliasq_utils.parse_timespec(args, "--end")
+
+if g_start is not None and g_end is not None and g_start > g_end:
+   print("ERROR: invalid arguments: --start is greater than --end",
+         file=sys.stderr)
+   sys.exit(1)
+
+#---------------------------------------------------------------------------
+
+g_addr = g_addrs = None
+
+if have("<ADDR>"):
+   aliasq_utils.parse_addr_arg(args["<ADDR>"])  # check syntax only
+   g_addr = args["<ADDR>"]
+
+if len(args["<ADDRS>"]) > 0:
+   if len(args["<ADDRS>"]) == 1:
+      print("ERROR: need at least two address arguments for 'group' command",
+            file=sys.stderr)
+      sys.exit(1)
+
+   g_addrs = []
+   for s in args["<ADDRS>"]:
+      aliasq_utils.parse_addr_arg(s)  # check syntax only
+      g_addrs.append(s)
+
+#---------------------------------------------------------------------------
+
+g_dataset_id = g_set_id = None
+if have("dump"):
+   g_dataset_id = aliasq_utils.parse_nonnegative_arg(args["<DATASET_ID>"])
+   g_set_id = aliasq_utils.parse_nonnegative_arg(args["<SET_ID>"])
+
+#---------------------------------------------------------------------------
+
+g_result_id = None
+if have("<RESULT_ID>"):
+   g_result_id = aliasq_utils.parse_nonnegative_arg(args["<RESULT_ID>"])
+
+
+#===========================================================================
+# MAIN
+#===========================================================================
+
+params = {'key': g_api_key}
+
+if g_dataset is not None: params['dataset'] = g_dataset
+if g_start is not None: params['start'] = g_start
+if g_end is not None: params['end'] = g_end
+if g_all: params['all'] = "true"
+if g_addr is not None: params['target'] = g_addr
+if g_addrs: params['targets'] = ",".join(g_addrs)
+
+if args["get"]:
+   params['id'] = g_result_id
+   r = requests.get(g_base_url + "/get", params=params, timeout=g_timeout,
+                    stream=True)
+
+elif args["status"]:
+   params['id'] = g_result_id
+   r = requests.get(g_base_url + "/status", params=params, timeout=g_timeout)
+
+elif args["list"]:
+   r = requests.post(g_base_url + "/list", params=params, timeout=g_timeout)
+
+elif args["track"]:
+   r = requests.post(g_base_url + "/track", params=params, timeout=g_timeout)
+
+elif args["find"]:
+   r = requests.post(g_base_url + "/find", params=params, timeout=g_timeout)
+
+elif args["group"]:
+   r = requests.post(g_base_url + "/group", params=params, timeout=g_timeout)
+
+elif args["dump"]:
+   params['dataset_id'] = g_dataset_id
+   params['set_id'] = g_set_id
+   r = requests.post(g_base_url + "/dump", params=params, timeout=g_timeout)
+
+
+print("URL:", r.url)
+print("HTTP response code:", r.status_code)
+
+if args["get"]:
+   out_path = args["--out"] or ("aliasq-{}.out".format(args["<RESULT_ID>"]))
+   with open(out_path, 'wb') as fd:
+    for chunk in r.iter_content(chunk_size=16384):
+        fd.write(chunk)
+
+   exit(0)
+
+print("HTTP response body:", r.text)
+print()
+
+result = r.json()
+
+if result["result"] == "error":
+   print("request error:", result["message"])
+   sys.exit(1)
+
+if args["list"] or args["track"] or args["find"] or args["group"] or \
+   args["dump"]:
+   print("result ID: {}".format(result["result_id"]))
+
+elif args["status"]:
+   print("status:", result["status"])
+
+   created = time.ctime(result["created"])
+   print("submission date:", created)
+
+   if result["status"] == "queued":
+      pass
+
+   elif result["status"] == "inprogress":
+      updated = time.ctime(result["updated"])
+      print("update date:", updated)
+
+   elif result["status"] == "finished":
+      completed = time.ctime(result["ended"])
+      print("completion date:", completed)
+      #print("found aliases:", result["found_aliases"])
+
+   elif result["status"] == "error":
+      print("message:", result["message"])
+
+   else:
+      print("ERROR: invalid status '{}'".format(result["status"]))
