@@ -25,36 +25,40 @@ except:
 mydb = connect["tracerouteDB"]
 mycol = mydb["traces"]
 
+#array with size=number of alias sets; we will use it to indicate with a 0 or 1 whether a particular alias set has an adjacency list or not
+checkArray = [0]*100
+
 for x in mycol.find():
   #check if document has set attribute
   sourceIP = x['IP']
   #the previous (IP, set) combination is kept and is initially set to the source IP
-  previousNode = Node(sourceIP, a[setNumber])
+  previousNode = Node(sourceIP, x['setNumber'])
+  #iterate through every element in the document's Tracert array checking set number
   for a in x['Tracert']:
-  	try:
-  		if checkArray[a['setNumber']]==0:
-  			#means adjacency ist is not made yet for this set
-  			createAdjacency(a['IP'], a[setNumber])
-  			checkArray[a[setNumber]]+=1
-  			#add this current instance of node to the previous node's adjacency list
-  			addToAdjacency(previousNode, a['IP'], a[setNumber])
+  	#first check if set number is -1
+  	if a['setNumber']==-1:
+  		#that IP is unique; be careful though because an IP might appear in more than one trace
+	if checkArray[a['setNumber']]==0:
+		#means adjacency ist is not made yet for this set
+		createAdjacency(a['IP'], a[setNumber])
+		checkArray[a[setNumber]]+=1
+		#add this current instance of node to the previous node's adjacency list
+		addToAdjacency(previousNode, a['IP'], a[setNumber])
 
 
-  		else:
-  			#add it as an adjacency listi
-  			addToAdjacency(previousNode, a['IP'], a[setNumber])
-  		previousNode = makeNode(a['IP'], a[setNumber])
+	else:
+		#add it as an adjacency listi
+		addToAdjacency(previousNode, a['IP'], a[setNumber])
+	previousNode = makeNode(a['IP'], a[setNumber])
 
 
-  		pprint(a['setNumber'])
-  	except:
-  		continue
+	pprint(a['setNumber'])
 
 print("over")
 
 #class for node
 class Node:
-  def __init__(IP, setNumber=-1):
+  def __init__(IP, setNumber):
     self.IP = IP
     self.setNumber = setNumber
   

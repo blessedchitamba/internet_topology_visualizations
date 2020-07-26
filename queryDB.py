@@ -16,14 +16,21 @@ mycol = mydb["traces"]
 
 #mycol.drop()
 
-#mycol.update_many({'setNumber': {"$exists" : False}}, {"$set": {'setNumber': -1}})
-qu = {}
-update = {"$set": {"Tracert.$[inner].setNumber": -1}}
-filter = [{"inner.setNumber": {"$exists": False}}]
-mycol.update_many(qu, update, upsert=True, array_filters=filter)
+#set all those with no set number to setNumber = -1
+# qu = {}
+# update = {"$set": {"Tracert.$[inner].setNumber": -1}}
+# filter = [{"inner.setNumber": {"$exists": False}}]
+# mycol.update_many(qu, update, upsert=True, array_filters=filter)
+
+#delete all tracert elements with null IP
+# qu = {}
+# update = { "$pull": { "Tracert": { "IP": "" } } }
+# result = mycol.update_many(qu, update, upsert=True)
+# print("Number of documents matched and modified: ", result.matched_count, result.modified_count)
 
 for x in mycol.find():
 	pprint(x)
+	#break
 
 
 # for x in mycol.find({ zipcode: "63109" },
