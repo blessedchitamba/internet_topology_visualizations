@@ -33,23 +33,6 @@ for x in mycol.find():
 	#break
 
 
-# for x in mycol.find({ zipcode: "63109" },
-#                  { students: { $elemMatch: { school: 102 } } }):
-#   pprint(x)
-
-
-# db.test.aggregate([
-#     {$match: {'shapes.color': 'red'}},
-#     {$project: {
-#         shapes: {$filter: {
-#             input: '$shapes',
-#             as: 'shape',
-#             cond: {$eq: ['$$shape.color', 'red']}
-#         }},
-#         _id: 0
-#     }}
-# ])
-
 # # the list_database_names() method returns a list of strings
 # database_names = connect.list_database_names()
 
