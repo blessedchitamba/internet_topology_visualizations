@@ -3,6 +3,7 @@ from pymongo import MongoClient
 import json
 import os
 from pprint import pprint
+from bson.son import SON
 
 # establing connection
 try:
@@ -28,9 +29,13 @@ mycol = mydb["traces"]
 # result = mycol.update_many(qu, update, upsert=True)
 # print("Number of documents matched and modified: ", result.matched_count, result.modified_count)
 
-for x in mycol.find():
-	pprint(x)
-	#break
+#return the distinct ASNs
+for asn in mycol.distinct("Tracert.ASN"):
+	print(asn)
+
+# for x in mycol.find():
+# 	pprint(x)
+# 	break
 
 
 # # the list_database_names() method returns a list of strings

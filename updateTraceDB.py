@@ -53,28 +53,6 @@ for line in f:
 		collection.update_many(qu, update)
 
 
-		# collection.update_many(
-		#    {"TracerouteTestResults.Tracert.IP": ip,
-		#    "TracerouteTestResults.Tracert": {"$elemMatch" : {"IP": ip}}},
-		#    {
-		#      "$set": { "TracerouteTestResults.Tracert.$.setNumber": lineCount},
-		#    }
-		# )
-
-		# collection.update_many(
-		#    { "TracerouteTestResults.IP": ip,
-		#    "TracerouteTestResults": {"$elemMatch" : {"IP": ip}}},
-		#    {
-		#      "$set": { "TracerouteTestResults.$.setNumber": lineCount},
-		#    }
-		# )
-
-# db.BlogPost.updateMany({},
-#   // Go through every comment and then find every reply whose `author` is 'Bar'
-#   { $set: { 'comments.$[].replies.$[reply].author': 'Baz' } },
-#   { arrayFilters: [{ 'reply.author': 'Bar' }] });
-
-
 # Printing the data inserted
 cursor = collection.find()
 #cursor = collection.find({"CountryCode": "EG"})
