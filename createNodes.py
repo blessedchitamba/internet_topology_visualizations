@@ -14,6 +14,8 @@ from pymongo import MongoClient
 import json
 import os
 from pprint import pprint
+from array import *
+import csv
 
 # establing connection
 try:
@@ -27,34 +29,50 @@ mycol = mydb["traces"]
 
 #array with size=number of alias sets; we will use it to indicate with a 0 or 1 whether a particular alias set has an adjacency list or not
 checkArray = [0]*100
-
+adjlist = []
+count=0
+vertices=[]
 for x in mycol.find():
-  #check if document has set attribute
-  sourceIP = x['IP']
-  #the previous (IP, set) combination is kept and is initially set to the source IP
-  previousNode = Node(sourceIP, x['setNumber'])
-  #iterate through every element in the document's Tracert array checking set number
-  for a in x['Tracert']:
-  	#first check if set number is -1
-  	if a['setNumber']==-1:
-  		#that IP is unique; be careful though because an IP might appear in more than one trace
-	if checkArray[a['setNumber']]==0:
-		#means adjacency ist is not made yet for this set
-		createAdjacency(a['IP'], a[setNumber])
-		checkArray[a[setNumber]]+=1
-		#add this current instance of node to the previous node's adjacency list
-		addToAdjacency(previousNode, a['IP'], a[setNumber])
+	#check if document has set attribute
+	source = x['ProbeInfo']['ASN']
+	count+=1
+	
 
+	#iterate through every element in the document's Tracert array checking set number
+	for a in x['Tracert']:
+		#first check if ASN=''
+		if a['ASN']=='':
+			continue
 
-	else:
-		#add it as an adjacency listi
-		addToAdjacency(previousNode, a['IP'], a[setNumber])
-	previousNode = makeNode(a['IP'], a[setNumber])
+		destination = a['ASN']
+		#keep updating the destination variable until the ASN is different from source
+		if source==destination:
+			#destination = a['ASN']
+			continue
 
+		#once it gets to this if it means source!=destination
+		if source not in vertices:
+			temp=[]
+			temp.append(source)
+			vertices.append(source)
+			temp.append(destination)
+			adjlist.append(temp)
+			#print(adjlist)
+		else:
+			index = vertices.index(source)
+			if destination not in adjlist[index]:
+				adjlist[index].append(destination)
+		#print(str(source)+": "+str(destination))
 
-	pprint(a['setNumber'])
+		#exchange the variables
+		source = destination
+	
 
-print("over")
+with open('asn_nodesAndLinks.csv', mode='w', newline='') as csv_file:
+	    csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+	    csv_writer.writerow(['#Data format: Vertex ASN, Connections'])
+	    for vertex in adjlist:
+	    	csv_writer.writerow(vertex)
 
 #class for node
 class Node:

@@ -39,3 +39,4 @@ with geoip2.database.Reader(pathToDb) as reader:
 
 #close file
 f.close()
+
