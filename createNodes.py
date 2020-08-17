@@ -33,21 +33,31 @@ adjlist = []
 count=0
 vertices=[]
 for x in mycol.find():
-	#check if document has set attribute
-	source = x['ProbeInfo']['ASN']
+	#source is a list variable with ASN and City
+	#source = [x['ProbeInfo']['ASN'], x['City']]
 	count+=1
-	
+
+	if len(x['Tracert'])!=0:
+		source = [x['Tracert'][0]['ASN'], x['Tracert'][0]['City']]
+	else:
+		continue
 
 	#iterate through every element in the document's Tracert array checking set number
 	for a in x['Tracert']:
-		#first check if ASN=''
-		if a['ASN']=='':
+
+		#first check if source does not have empty ASN or City
+		if source[0]=='' or source[1]=='' or source[1]==None:
+			source = [a['ASN'], a['City']]
 			continue
 
-		destination = a['ASN']
-		#keep updating the destination variable until the ASN is different from source
+		#first check if ASN='' or City=''
+		if a['ASN']=='' or a['City']=='' or a['City']==None:
+			continue
+
+		#destination is a list variable
+		destination = [a['ASN'], a['City']]
+		#keep updating the destination variable until the ASN and City is different from source
 		if source==destination:
-			#destination = a['ASN']
 			continue
 
 		#once it gets to this if it means source!=destination
@@ -70,7 +80,7 @@ for x in mycol.find():
 
 with open('asn_nodesAndLinks.csv', mode='w', newline='') as csv_file:
 	    csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-	    csv_writer.writerow(['#Data format: Vertex ASN, Connections'])
+	    csv_writer.writerow(['#Data format: Vertex ASN and City, Connections'])
 	    for vertex in adjlist:
 	    	csv_writer.writerow(vertex)
 

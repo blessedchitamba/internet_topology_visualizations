@@ -30,12 +30,12 @@ mycol = mydb["traces"]
 # print("Number of documents matched and modified: ", result.matched_count, result.modified_count)
 
 #return the distinct ASNs
-for asn in mycol.distinct("Tracert.ASN"):
-	print(asn)
+# for asn in mycol.distinct("Tracert.ASN"):
+# 	print(asn)
 
-# for x in mycol.find():
-# 	pprint(x)
-# 	break
+for x in mycol.find():
+	pprint(x)
+	#break
 
 
 # # the list_database_names() method returns a list of strings
