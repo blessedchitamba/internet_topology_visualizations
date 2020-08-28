@@ -12,8 +12,12 @@ try:
 except:
     print("Could not connect to MongoDB")
 
-mydb = connect["tracerouteDB"]
-mycol = mydb["traces"]
+# connecting or switching to the database
+db = connect.tracerouteDB
+
+# creating or switching to demoCollection 
+collection = db.traces
+#ripe_collection = db.ripe_traces
 
 #mycol.drop()
 
@@ -30,12 +34,12 @@ mycol = mydb["traces"]
 # print("Number of documents matched and modified: ", result.matched_count, result.modified_count)
 
 #return the distinct ASNs
-# for asn in mycol.distinct("Tracert.ASN"):
-# 	print(asn)
+for asn in collection.distinct("Tracert.ASN"):
+	print(asn)
 
-for x in mycol.find():
-	pprint(x)
-	#break
+# for x in ripe_collection.find():
+# 	pprint(x)
+# 	#break
 
 
 # # the list_database_names() method returns a list of strings

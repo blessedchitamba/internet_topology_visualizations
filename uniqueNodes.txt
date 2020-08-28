@@ -1,0 +1,74 @@
+36907,Luanda
+37468,Luanda
+30844,Mokopane
+30844,Bela-Bela
+15399,Dar es Salaam
+15399,Nairobi
+37100,Dar es Salaam
+37100,Nairobi
+30844,Harare
+36903,Casablanca
+6713,Meknes
+6713,Kenitra
+36903,Marrakesh
+36903,Rabat
+36903,Tangier
+8452,Suez
+3356,Prague
+3356,Surbiton
+2905,Germiston
+3356,Hassocks
+3356,Barcelona
+174,Marchena
+174,Opera
+327693,Cape Town
+36903,Beni Mellal
+8452,Cairo
+327903,Freetown
+37164,Freetown
+37100,Johannesburg
+5713,Hotazel
+5713,Stellenbosch
+37611,Cape Town
+37611,Durban
+37611,Johannesburg
+37611,Pretoria
+36926,Nairobi
+37075,Kampala
+6713,Tangier
+36903,Temara
+36903,El Hajeb
+37100,Marseille
+36994,Durban
+3356,South Ockendon
+37006,Kigali
+174,Islington
+60171,London
+36903,Agadir
+24835,Cairo
+8452,Bani Suwayf
+37705,Tunis
+37693,Kasserine
+37611,Randburg
+5713,Kokstad
+37457,Cape Town
+10474,Cape Town
+37266,Cape Town
+37179,Johannesburg
+37457,Pretoria
+37596,Johannesburg
+328471,Lephalale
+327693,Benoni
+5713,Graaff Reinet
+5713,Springbok
+328366,Johannesburg
+328366,Durban
+328366,Cape Town
+36947,Taoura
+19711,Mbabane
+36947,Saida
+36947,Algiers
+36947,Mostaganem
+36947,Béjaïa
+36947,Tiaret
+36947,Constantine
