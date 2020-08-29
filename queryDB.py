@@ -34,8 +34,14 @@ collection = db.traces
 # print("Number of documents matched and modified: ", result.matched_count, result.modified_count)
 
 #return the distinct ASNs
-for asn in collection.distinct("Tracert.ASN"):
-	print(asn)
+# for asn in collection.distinct("Tracert.ASN"):
+# 	print(asn)
+
+asn = 36907
+city = "Luanda"
+for x in collection.find({}, {"Tracert.ASN": 1, "Tracert.City":1, "Tracert.IP": 1}):
+	pprint(x)
+	#break
 
 # for x in ripe_collection.find():
 # 	pprint(x)
