@@ -4,11 +4,12 @@ import json
 import os
 from pprint import pprint
 from bson.son import SON
+import geoip2.database
 
 # establing connection
 try:
     connect = MongoClient('localhost', 27017)
-    print("Connected successfully!!!")
+    #print("Connected successfully!!!")
 except:
     print("Could not connect to MongoDB")
 
@@ -16,10 +17,10 @@ except:
 db = connect.tracerouteDB
 
 # creating or switching to demoCollection 
+#collection = db.traces
 collection = db.traces
-#ripe_collection = db.ripe_traces
 
-#mycol.drop()
+#collection.drop()
 
 #set all those with no set number to setNumber = -1
 # qu = {}
@@ -33,15 +34,30 @@ collection = db.traces
 # result = mycol.update_many(qu, update, upsert=True)
 # print("Number of documents matched and modified: ", result.matched_count, result.modified_count)
 
+# #delete all hops with {'x': '*'} as result[0] from ripe data
+# delete_query = {"result.0.x": "*"}
+# result = ripe_collection.delete_many(delete_query)
+
 #return the distinct ASNs
 # for asn in collection.distinct("Tracert.ASN"):
 # 	print(asn)
 
-asn = 36907
-city = "Luanda"
-for x in collection.find({}, {"Tracert.ASN": 1, "Tracert.City":1, "Tracert.IP": 1}):
-	pprint(x)
-	#break
+#return the distinct IPs
+result = collection.distinct("Tracert.IP")
+for ip in result:
+	print(ip)
+#print("Number of IPs found: ", len(result))
+
+result = collection.distinct("IP")
+for ip in result:
+	print(ip)
+#print("Number of IPs found: ", len(result))
+
+# asn = 36907
+# city = "Luanda"
+# for x in collection.find({}, {"Tracert.ASN": 1, "Tracert.City":1, "Tracert.IP": 1}):
+# 	pprint(x)
+# 	#break
 
 # for x in ripe_collection.find():
 # 	pprint(x)
